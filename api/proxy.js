@@ -1,4 +1,4 @@
-// api/[...path].js
+// api/proxy.js
 const OWNER_URL = "http://node.cyberhost.site:3002";
 
 module.exports = async (req, res) => {
@@ -7,15 +7,14 @@ module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-dash-token, x-tenant-token");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  // req.query.path vem como array: ['dash', 'me']
-  const pathParts = req.query.path || [];
-  const path = Array.isArray(pathParts) ? "/" + pathParts.join("/") : "/" + pathParts;
+  // Vem tudo por query string: /api/proxy?endpoint=/dash/me&token=xxx
+  const endpoint = req.query.endpoint || "/";
 
-  // Params sem o "path"
   const params = { ...req.query };
-  delete params.path;
+  delete params.endpoint;
+
   const qs = new URLSearchParams(params).toString();
-  const targetUrl = `${OWNER_URL}${path}${qs ? "?" + qs : ""}`;
+  const targetUrl = `${OWNER_URL}${endpoint}${qs ? "?" + qs : ""}`;
 
   console.log(`[PROXY] ${req.method} ${targetUrl}`);
 
