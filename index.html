@@ -48,8 +48,6 @@
   .updated{font-size:12px;color:#64748b;text-align:right;margin-bottom:12px}
   .tenant-row{cursor:pointer}
   .rank-num{font-weight:700;color:#fbbf24;width:30px}
-  .mb-link{color:#60a5fa;text-decoration:none}
-  .mb-link:hover{text-decoration:underline}
   @media(max-width:600px){.card .value{font-size:22px}.wrap{padding:16px}th,td{padding:8px 4px;font-size:12px}}
 </style>
 </head>
@@ -57,12 +55,6 @@
 <div id="app"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-//   API → usa o proxy do Vercel (/api) que fala com o bot
-//   Não uses o URL direto do bot aqui (mixed content)
-// ═══════════════════════════════════════════════════════════
-const API = "/api/proxy";
-
 const app = document.getElementById("app");
 const path = window.location.pathname;
 const LS_KEY = "dash_owner_token";
@@ -75,11 +67,24 @@ if (path.startsWith("/u/")) {
   renderOwner();
 }
 
-// ─────────────── HELPER FETCH ───────────────
-async function apiGet(endpoint, params = {}) {
-  const qs = new URLSearchParams({ endpoint, ...params }).toString();
+// ─────────────── FETCH OWNER (:3002) ───────────────
+async function apiOwner(endpoint, params = {}) {
+  const qs = new URLSearchParams({ endpoint: "/owner" + endpoint, ...params }).toString();
   const url = `/api/proxy?${qs}`;
-  console.log("[GET]", url);
+  console.log("[OWNER]", url);
+  const r = await fetch(url);
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
+  }
+  return await r.json();
+}
+
+// ─────────────── FETCH TENANT (:3003) ───────────────
+async function apiTenant(endpoint, params = {}) {
+  const qs = new URLSearchParams({ endpoint: "/tenant" + endpoint, ...params }).toString();
+  const url = `/api/proxy?${qs}`;
+  console.log("[TENANT]", url);
   const r = await fetch(url);
   if (!r.ok) {
     const txt = await r.text();
@@ -124,14 +129,14 @@ function renderOwnerLogin() {
 async function loadOwnerData(token) {
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const data = await apiGet("/dash/overview", { token });
+    const data = await apiOwner("/dash/overview", { token });
     renderOwnerView(data, token);
   } catch (e) {
     if (e.message.includes("401")) {
       localStorage.removeItem(LS_KEY);
       return renderOwnerLogin();
     }
-    app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}<br><br><button class="btn" onclick="localStorage.clear();location.reload()">Voltar ao login</button></div></div>`;
+    app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}<br><br><button class="btn" onclick="localStorage.clear();location.reload()">Voltar</button></div></div>`;
   }
 }
 
@@ -181,30 +186,20 @@ function renderOwnerView(d, token) {
         <div class="card hl-green">
           <div class="label">Vendas hoje</div>
           <div class="value">${totalMB}<span style="font-size:14px;color:#94a3b8"> GB</span></div>
-          <div class="sub">${d.vendasHoje.mt} MT faturados</div>
+          <div class="sub">${d.vendasHoje.mt} MT</div>
         </div>
         <div class="card">
           <div class="label">Pedidos pendentes</div>
           <div class="value">${d.pedidosPendentes}</div>
-          <div class="sub">a aguardar processamento</div>
+          <div class="sub">a aguardar</div>
         </div>
       </div>
 
       <div class="section">
         <h2>🏆 Ranking de tenants (hoje)</h2>
         <table>
-          <thead>
-            <tr>
-              <th>Tenant</th>
-              <th>Estado</th>
-              <th>Expira</th>
-              <th>Grupos</th>
-              <th>Pendentes</th>
-              <th>Vendas MB</th>
-              <th>Vendas MT</th>
-            </tr>
-          </thead>
-          <tbody>${tenantsRows || `<tr><td colspan="7" class="empty">Nenhum tenant registado</td></tr>`}</tbody>
+          <thead><tr><th>Tenant</th><th>Estado</th><th>Expira</th><th>Grupos</th><th>Pendentes</th><th>Vendas MB</th><th>Vendas MT</th></tr></thead>
+          <tbody>${tenantsRows || `<tr><td colspan="7" class="empty">Nenhum tenant</td></tr>`}</tbody>
         </table>
       </div>
     </div>`;
@@ -214,7 +209,7 @@ window.verTenant = async function(lidEncoded, token) {
   const lid = decodeURIComponent(lidEncoded);
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const d = await apiGet(`/dash/tenant/${encodeURIComponent(lid)}`, { token });
+    const d = await apiOwner(`/dash/tenant/${encodeURIComponent(lid)}`, { token });
     renderTenantDetail(d, token, true);
   } catch (e) {
     app.innerHTML = `<div class="wrap"><div class="empty">❌ ${e.message}</div></div>`;
@@ -227,7 +222,7 @@ window.verTenant = async function(lidEncoded, token) {
 async function renderTenant(token) {
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const d = await apiGet("/dash/me", { token });
+    const d = await apiTenant("/dash/me", { token });
     renderTenantDetail(d, token, false);
   } catch (e) {
     if (e.message.includes("401")) {
@@ -248,18 +243,10 @@ function renderTenantDetail(d, token, isOwner) {
 
   const ranking = (d.topCompradores || []).map((c, i) => {
     const mb = (c.totalMB / 1024).toFixed(2);
-    return `<tr>
-      <td class="rank-num">#${i + 1}</td>
-      <td>${c.numero}</td>
-      <td>${c.compras} compras</td>
-      <td><strong>${mb} GB</strong></td>
-    </tr>`;
+    return `<tr><td class="rank-num">#${i + 1}</td><td>${c.numero}</td><td>${c.compras} compras</td><td><strong>${mb} GB</strong></td></tr>`;
   }).join("");
 
-  const back = isOwner
-    ? `<button class="btn secondary" onclick="location.reload()">← Voltar</button>`
-    : "";
-
+  const back = isOwner ? `<button class="btn secondary" onclick="location.reload()">← Voltar</button>` : "";
   const refresh = isOwner
     ? `onclick="verTenant('${encodeURIComponent(d.lid)}', '${token}')"`
     : `onclick="renderTenant('${token}')"`;
@@ -299,7 +286,7 @@ function renderTenantDetail(d, token, isOwner) {
 
       <div class="section">
         <h2>🏆 Top 5 Compradores</h2>
-        ${ranking ? `<table><thead><tr><th></th><th>Número</th><th>Compras</th><th>Total</th></tr></thead><tbody>${ranking}</tbody></table>` : `<div class="empty">Sem compradores registados</div>`}
+        ${ranking ? `<table><thead><tr><th></th><th>Número</th><th>Compras</th><th>Total</th></tr></thead><tbody>${ranking}</tbody></table>` : `<div class="empty">Sem compradores</div>`}
       </div>
 
       <div class="section">
