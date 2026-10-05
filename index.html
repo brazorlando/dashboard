@@ -61,7 +61,7 @@
 //   API → usa o proxy do Vercel (/api) que fala com o bot
 //   Não uses o URL direto do bot aqui (mixed content)
 // ═══════════════════════════════════════════════════════════
-const API = "/api";
+const API = "/api/proxy";
 
 const app = document.getElementById("app");
 const path = window.location.pathname;
@@ -77,8 +77,8 @@ if (path.startsWith("/u/")) {
 
 // ─────────────── HELPER FETCH ───────────────
 async function apiGet(endpoint, params = {}) {
-  const qs = new URLSearchParams(params).toString();
-  const url = `/api${endpoint}${qs ? "?" + qs : ""}`;
+  const qs = new URLSearchParams({ endpoint, ...params }).toString();
+  const url = `/api/proxy?${qs}`;
   console.log("[GET]", url);
   const r = await fetch(url);
   if (!r.ok) {
