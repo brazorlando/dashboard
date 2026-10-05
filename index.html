@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0e1a;color:#e6edf7;min-height:100vh}
@@ -25,6 +24,7 @@
   .card.hl-blue{border-color:#2563eb;background:linear-gradient(180deg,#111827,#0f1c33)}
   .card.hl-green{border-color:#059669;background:linear-gradient(180deg,#111827,#0a2318)}
   .card.hl-amber{border-color:#d97706;background:linear-gradient(180deg,#111827,#2a1a06)}
+  .card.hl-red{border-color:#dc2626;background:linear-gradient(180deg,#111827,#2a0a0a)}
   .section{background:#111827;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:24px}
   .section h2{font-size:16px;margin-bottom:16px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
   table{width:100%;border-collapse:collapse}
@@ -45,14 +45,12 @@
   .loading{color:#64748b;text-align:center;padding:40px}
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid #334155;border-top-color:#60a5fa;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .chart-wrap{height:280px;position:relative}
   .updated{font-size:12px;color:#64748b;text-align:right;margin-bottom:12px}
   .tenant-row{cursor:pointer}
   .rank-num{font-weight:700;color:#fbbf24;width:30px}
-  .pb{background:#fca5a5;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700}
   .mb-link{color:#60a5fa;text-decoration:none}
   .mb-link:hover{text-decoration:underline}
-  @media(max-width:600px){.card .value{font-size:22px}.wrap{padding:16px}}
+  @media(max-width:600px){.card .value{font-size:22px}.wrap{padding:16px}th,td{padding:8px 4px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -60,10 +58,10 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════
-//   ⚠️ CONFIGURA AQUI O URL DO TEU BOT DO OWNER
+//   API → usa o proxy do Vercel (/api) que fala com o bot
+//   Não uses o URL direto do bot aqui (mixed content)
 // ═══════════════════════════════════════════════════════════
 const API = "/api";
-// ═══════════════════════════════════════════════════════════
 
 const app = document.getElementById("app");
 const path = window.location.pathname;
@@ -75,6 +73,17 @@ if (path.startsWith("/u/")) {
   renderTenant(token);
 } else {
   renderOwner();
+}
+
+// ─────────────── HELPER FETCH ───────────────
+async function apiGet(endpoint, params = {}) {
+  const qs = new URLSearchParams({ path: endpoint, ...params }).toString();
+  const r = await fetch(`${API}?${qs}`);
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
+  }
+  return await r.json();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -113,28 +122,27 @@ function renderOwnerLogin() {
 async function loadOwnerData(token) {
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const r = await fetch(`${API}/dash/overview?token=${token}`);
-    if (r.status === 401) {
+    const data = await apiGet("/dash/overview", { token });
+    renderOwnerView(data, token);
+  } catch (e) {
+    if (e.message.includes("401")) {
       localStorage.removeItem(LS_KEY);
       return renderOwnerLogin();
     }
-    const data = await r.json();
-    renderOwnerView(data, token);
-  } catch (e) {
     app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}<br><br><button class="btn" onclick="localStorage.clear();location.reload()">Voltar ao login</button></div></div>`;
   }
 }
 
 function renderOwnerView(d, token) {
   const totalMB = (d.vendasHoje.mb / 1024).toFixed(2);
-  const tenantsRows = d.tenants.map((t) => {
+  const tenantsRows = (d.tenants || []).map((t) => {
     const dias = t.diasRestantes;
     let badgeCls = "ok", badgeTxt = `${dias}d`;
     if (!t.ativo) { badgeCls = "err"; badgeTxt = "inativo"; }
     else if (dias <= 3) { badgeCls = "err"; }
     else if (dias <= 7) { badgeCls = "warn"; }
     const mb = (t.vendasHoje.mb / 1024).toFixed(2);
-    return `<tr class="tenant-row" onclick="verTenant('${t.lid}', '${token}')">
+    return `<tr class="tenant-row" onclick="verTenant('${encodeURIComponent(t.lid)}', '${token}')">
       <td><strong>${t.nome || "—"}</strong></td>
       <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       <td>${dias} dias</td>
@@ -155,7 +163,7 @@ function renderOwnerView(d, token) {
         </div>
       </div>
 
-      <div class="updated">Última atualização: ${new Date(d.timestamp).toLocaleTimeString("pt-PT")}</div>
+      <div class="updated">Última atualização: ${new Date(d.timestamp || Date.now()).toLocaleTimeString("pt-PT")}</div>
 
       <div class="grid cards">
         <div class="card hl-blue">
@@ -200,14 +208,14 @@ function renderOwnerView(d, token) {
     </div>`;
 }
 
-window.verTenant = async function(lid, token) {
+window.verTenant = async function(lidEncoded, token) {
+  const lid = decodeURIComponent(lidEncoded);
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const r = await fetch(`${API}/dash/tenant/${encodeURIComponent(lid)}?token=${token}`);
-    const d = await r.json();
+    const d = await apiGet(`/dash/tenant/${encodeURIComponent(lid)}`, { token });
     renderTenantDetail(d, token, true);
   } catch (e) {
-    app.innerHTML = `<div class=u"wrap"><div class="empty">❌ ${e.message}</div></div>`;
+    app.innerHTML = `<div class="wrap"><div class="empty">❌ ${e.message}</div></div>`;
   }
 };
 
@@ -217,14 +225,13 @@ window.verTenant = async function(lid, token) {
 async function renderTenant(token) {
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const r = await fetch(`${API}/dash/me?token=${token}`);
-    if (r.status === 401) {
+    const d = await apiGet("/dash/me", { token });
+    renderTenantDetail(d, token, false);
+  } catch (e) {
+    if (e.message.includes("401")) {
       app.innerHTML = `<div class="wrap"><div class="empty">🔒 Link inválido ou expirado.<br>Pede ao bot um novo com <code>.gerardashboard</code></div></div>`;
       return;
     }
-    const d = await r.json();
-    renderTenantDetail(d, token, false);
-  } catch (e) {
     app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}</div></div>`;
   }
 }
@@ -237,7 +244,7 @@ function renderTenantDetail(d, token, isOwner) {
   else if (diasRestantes <= 3) badgeCls = "err";
   else if (diasRestantes <= 7) badgeCls = "warn";
 
-  const ranking = d.topCompradores.map((c, i) => {
+  const ranking = (d.topCompradores || []).map((c, i) => {
     const mb = (c.totalMB / 1024).toFixed(2);
     return `<tr>
       <td class="rank-num">#${i + 1}</td>
@@ -252,7 +259,7 @@ function renderTenantDetail(d, token, isOwner) {
     : "";
 
   const refresh = isOwner
-    ? `onclick="verTenant('${d.lid}', '${token}')"`
+    ? `onclick="verTenant('${encodeURIComponent(d.lid)}', '${token}')"`
     : `onclick="renderTenant('${token}')"`;
 
   app.innerHTML = `
@@ -266,7 +273,7 @@ function renderTenantDetail(d, token, isOwner) {
       </div>
 
       <div class="grid cards">
-        <div class="card hl-${badgeCls === "ok" ? "green" : badgeCls === "warn" ? "amber" : "blue"}">
+        <div class="card hl-${badgeCls === "ok" ? "green" : badgeCls === "warn" ? "amber" : "red"}">
           <div class="label">Estado</div>
           <div class="value">${d.ativo ? "Ativo" : "Inativo"}</div>
           <div class="sub">${diasRestantes} dias restantes</div>
