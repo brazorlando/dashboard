@@ -77,8 +77,10 @@ if (path.startsWith("/u/")) {
 
 // ─────────────── HELPER FETCH ───────────────
 async function apiGet(endpoint, params = {}) {
-  const qs = new URLSearchParams({ path: endpoint, ...params }).toString();
-  const r = await fetch(`${API}?${qs}`);
+  const qs = new URLSearchParams(params).toString();
+  const url = `/api${endpoint}${qs ? "?" + qs : ""}`;
+  console.log("[GET]", url);
+  const r = await fetch(url);
   if (!r.ok) {
     const txt = await r.text();
     throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
