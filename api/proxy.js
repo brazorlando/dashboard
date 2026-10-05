@@ -1,20 +1,37 @@
 // api/proxy.js
 const OWNER_URL = "http://node.cyberhost.site:3002";
+const TENANT_URL = "http://node.cyberhost.site:3003";
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-dash-token, x-tenant-token");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, x-dash-token, x-tenant-token"
+  );
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  // Vem tudo por query string: /api/proxy?endpoint=/dash/me&token=xxx
   const endpoint = req.query.endpoint || "/";
+
+  let base;
+  let realPath = endpoint;
+
+  if (endpoint.startsWith("/tenant")) {
+    base = TENANT_URL;
+    realPath = endpoint.replace(/^\/tenant/, "") || "/";
+  } else if (endpoint.startsWith("/owner")) {
+    base = OWNER_URL;
+    realPath = endpoint.replace(/^\/owner/, "") || "/";
+  } else {
+    base = OWNER_URL;
+    realPath = endpoint;
+  }
 
   const params = { ...req.query };
   delete params.endpoint;
 
   const qs = new URLSearchParams(params).toString();
-  const targetUrl = `${OWNER_URL}${endpoint}${qs ? "?" + qs : ""}`;
+  const targetUrl = `${base}${realPath}${qs ? "?" + qs : ""}`;
 
   console.log(`[PROXY] ${req.method} ${targetUrl}`);
 
