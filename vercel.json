@@ -1,7 +1,6 @@
 {
   "rewrites": [
     { "source": "/u/:token", "destination": "/index.html" },
-    { "source": "/owner", "destination": "/index.html" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/owner", "destination": "/index.html" }
   ]
 }
