@@ -5,114 +5,310 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard</title>
 <style>
+  :root{
+    --bg:#0a0e1a; --bg-card:#111827; --bg-elev:#151e2e; --bg-input:#0d1424;
+    --border:#1e293b; --border-hover:#334155;
+    --text:#e6edf7; --text-dim:#94a3b8; --text-mute:#64748b;
+    --primary:#3b82f6; --primary-hover:#2563eb;
+    --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+    --purple:#8b5cf6; --pink:#ec4899; --cyan:#06b6d4;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0e1a;color:#e6edf7;min-height:100vh}
-  .wrap{max-width:1400px;margin:0 auto;padding:24px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #1e293b}
-  .logo{font-size:22px;font-weight:700;color:#60a5fa}
-  .logo span{color:#e6edf7}
-  .btn{background:#1e40af;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:.15s}
-  .btn:hover{background:#2563eb}
-  .btn.secondary{background:#1e293b}
-  .btn.secondary:hover{background:#334155}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text); min-height:100vh;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(59,130,246,0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(139,92,246,0.08) 0px, transparent 50%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1300px;margin:0 auto;padding:24px}
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.9em;background:rgba(59,130,246,0.1);color:#93c5fd;padding:2px 6px;border-radius:4px}
+
+  /* ── TOPBAR ── */
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+  .logo{font-size:22px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+  .logo span{color:var(--text);font-weight:600}
+  .topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ── BOTÕES ── */
+  .btn{
+    background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:8px;
+    cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;
+    display:inline-flex;align-items:center;gap:6px;font-family:inherit;
+  }
+  .btn:hover{background:var(--primary-hover);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn.secondary{background:var(--bg-elev);border:1px solid var(--border)}
+  .btn.secondary:hover{background:#1e293b;border-color:var(--border-hover)}
+  .btn.success{background:var(--green)}
+  .btn.success:hover{background:#059669}
+  .btn.danger{background:var(--red)}
+  .btn.danger:hover{background:#dc2626}
+  .btn.small{padding:6px 12px;font-size:12px}
+
+  /* ── CARDS KPI ── */
   .grid{display:grid;gap:16px;margin-bottom:24px}
-  .cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .card{background:#111827;border:1px solid #1e293b;border-radius:12px;padding:20px}
-  .card .label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-  .card .value{font-size:28px;font-weight:700;color:#fff}
-  .card .sub{font-size:13px;color:#94a3b8;margin-top:6px}
-  .card.hl-blue{border-color:#2563eb;background:linear-gradient(180deg,#111827,#0f1c33)}
-  .card.hl-green{border-color:#059669;background:linear-gradient(180deg,#111827,#0a2318)}
-  .card.hl-amber{border-color:#d97706;background:linear-gradient(180deg,#111827,#2a1a06)}
-  .card.hl-red{border-color:#dc2626;background:linear-gradient(180deg,#111827,#2a0a0a)}
-  .section{background:#111827;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:24px}
-  .section h2{font-size:16px;margin-bottom:16px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .card{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+    padding:20px;transition:all .2s;position:relative;overflow:hidden;
+  }
+  .card:hover{border-color:var(--border-hover);transform:translateY(-2px)}
+  .card .label{
+    font-size:11px;color:var(--text-mute);text-transform:uppercase;
+    letter-spacing:.8px;margin-bottom:10px;font-weight:600;
+  }
+  .card .value{font-size:30px;font-weight:700;color:#fff;line-height:1.1}
+  .card .value small{font-size:14px;color:var(--text-dim);font-weight:500}
+  .card .sub{font-size:12px;color:var(--text-dim);margin-top:6px}
+  .card.hl-green{border-color:rgba(16,185,129,.4);background:linear-gradient(180deg,var(--bg-card),rgba(16,185,129,.06))}
+  .card.hl-amber{border-color:rgba(245,158,11,.4);background:linear-gradient(180deg,var(--bg-card),rgba(245,158,11,.06))}
+  .card.hl-red{border-color:rgba(239,68,68,.4);background:linear-gradient(180deg,var(--bg-card),rgba(239,68,68,.06))}
+  .card.hl-blue{border-color:rgba(59,130,246,.4);background:linear-gradient(180deg,var(--bg-card),rgba(59,130,246,.06))}
+  .card .icon{position:absolute;top:16px;right:16px;font-size:22px;opacity:.35}
+
+  /* ── SECÇÕES ── */
+  .section{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+    padding:22px;margin-bottom:20px;
+  }
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .section h2{font-size:15px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px}
+
+  /* ── TABS ── */
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg-card);padding:5px;border-radius:12px;border:1px solid var(--border);overflow-x:auto}
+  .tab{
+    flex:1;min-width:120px;padding:11px 16px;background:transparent;border:none;
+    color:var(--text-dim);font-weight:600;font-size:13px;cursor:pointer;border-radius:8px;
+    transition:all .15s;font-family:inherit;white-space:nowrap;
+  }
+  .tab:hover{color:var(--text);background:var(--bg-elev)}
+  .tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+
+  /* ── BADGES ── */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .badge.ok{background:rgba(16,185,129,.15);color:#34d399}
+  .badge.warn{background:rgba(245,158,11,.15);color:#fbbf24}
+  .badge.err{background:rgba(239,68,68,.15);color:#f87171}
+  .badge.info{background:rgba(59,130,246,.15);color:#60a5fa}
+  .badge.neutral{background:rgba(100,116,139,.15);color:#94a3b8}
+
+  /* ── TABELAS ── */
   table{width:100%;border-collapse:collapse}
-  th,td{text-align:left;padding:12px 8px;border-bottom:1px solid #1e293b;font-size:14px}
-  th{color:#94a3b8;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
-  tr:hover td{background:#1a2332}
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase}
-  .badge.ok{background:#065f46;color:#6ee7b7}
-  .badge.warn{background:#78350f;color:#fcd34d}
-  .badge.err{background:#7f1d1d;color:#fca5a5}
-  .badge.info{background:#1e3a8a;color:#93c5fd}
-  .login{max-width:420px;margin:100px auto;text-align:center}
-  .login h1{font-size:26px;margin-bottom:24px}
-  .login input{width:100%;padding:14px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e6edf7;font-size:14px;margin-bottom:16px}
-  .login input:focus{outline:none;border-color:#2563eb}
-  .login button{width:100%;padding:14px;font-size:15px}
-  .empty{color:#64748b;text-align:center;padding:40px 20px;font-size:14px}
-  .loading{color:#64748b;text-align:center;padding:40px}
-  .spinner{display:inline-block;width:16px;height:16px;border:2px solid #334155;border-top-color:#60a5fa;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+  th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+  th{color:var(--text-mute);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding-top:0}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:var(--bg-elev)}
+  tbody tr:last-child td{border-bottom:none}
+
+  /* ── FORM / INPUTS ── */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .field .desc{font-size:11px;color:var(--text-mute);margin-bottom:6px;font-weight:400;text-transform:none;letter-spacing:0}
+  .input-group{display:flex;gap:8px}
+  .input-group input{flex:1;min-width:0}
+  input[type="text"],input[type="url"],input[type="password"]{
+    width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg-input);color:var(--text);font-size:13px;font-family:inherit;
+    transition:all .15s;
+  }
+  input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+  input::placeholder{color:var(--text-mute)}
+  input.valid{border-color:rgba(16,185,129,.5)}
+  input.invalid{border-color:rgba(239,68,68,.5)}
+
+  /* ── URL GROUP ── */
+  .url-group{
+    background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;
+    padding:16px;margin-bottom:14px;
+  }
+  .url-group-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .url-group-icon{font-size:18px}
+  .url-group-title{font-weight:600;font-size:14px;color:var(--text)}
+  .url-group-status{font-size:11px;color:var(--text-mute);margin-left:auto;font-weight:600}
+
+  /* ── TOAST ── */
+  .toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;max-width:380px}
+  .toast{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:10px;
+    padding:14px 18px;font-size:14px;font-weight:500;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+    animation:slideIn .3s ease-out;
+    display:flex;align-items:center;gap:10px;
+  }
+  .toast.success{border-color:rgba(16,185,129,.5)}
+  .toast.error{border-color:rgba(239,68,68,.5)}
+  @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+  /* ── EMPTY / LOADING ── */
+  .empty{color:var(--text-mute);text-align:center;padding:40px 20px;font-size:14px}
+  .loading{color:var(--text-mute);text-align:center;padding:60px}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .updated{font-size:12px;color:#64748b;text-align:right;margin-bottom:12px}
+
+  /* ── LOGIN ── */
+  .login{max-width:420px;margin:100px auto;text-align:center}
+  .login h1{font-size:26px;margin-bottom:24px;color:var(--primary)}
+  .login h1 span{color:var(--text)}
+
+  /* ── MISC ── */
+  .updated{font-size:12px;color:var(--text-mute);text-align:right;margin-bottom:12px}
+  .rank-num{font-weight:700;color:#fbbf24;width:36px}
   .tenant-row{cursor:pointer}
-  .rank-num{font-weight:700;color:#fbbf24;width:30px}
-  @media(max-width:600px){.card .value{font-size:22px}.wrap{padding:16px}th,td{padding:8px 4px;font-size:12px}}
+  .kv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .kv:last-child{border-bottom:none}
+  .kv .k{color:var(--text-dim)}
+  .kv .v{color:var(--text);font-weight:500;text-align:right;font-family:ui-monospace,monospace}
+  .pulse{animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+  @media(max-width:640px){
+    .wrap{padding:16px}
+    .card .value{font-size:24px}
+    th,td{padding:8px 6px;font-size:12px}
+    .section{padding:16px}
+    .tabs{padding:4px}
+    .tab{padding:9px 12px;font-size:12px;min-width:100px}
+  }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div class="toast-wrap" id="toasts"></div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+//   CONFIG
+// ═══════════════════════════════════════════════════════════════
+const API = "/api/proxy";
 const app = document.getElementById("app");
 const path = window.location.pathname;
 const LS_KEY = "dash_owner_token";
 
-// ─────────────── ROUTER ───────────────
+// ═══════════════════════════════════════════════════════════════
+//   TOAST
+// ═══════════════════════════════════════════════════════════════
+function toast(msg, tipo = "success") {
+  const wrap = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = `toast ${tipo}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = "0";
+    el.style.transform = "translateX(30px)";
+    el.style.transition = "all .3s";
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   ROUTER
+// ═══════════════════════════════════════════════════════════════
 if (path.startsWith("/u/")) {
-  const token = path.slice(3);
-  renderTenant(token);
+  renderTenant(path.slice(3));
 } else {
   renderOwner();
 }
 
-// ─────────────── FETCH OWNER (:3002) ───────────────
+// ═══════════════════════════════════════════════════════════════
+//   FETCH HELPERS
+// ═══════════════════════════════════════════════════════════════
 async function apiOwner(endpoint, params = {}) {
   const qs = new URLSearchParams({ endpoint: "/owner" + endpoint, ...params }).toString();
-  const url = `/api/proxy?${qs}`;
-  console.log("[OWNER]", url);
-  const r = await fetch(url);
+  const r = await fetch(`${API}?${qs}`);
   if (!r.ok) {
     const txt = await r.text();
     throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
   }
-  return await r.json();
+  return r.json();
 }
 
-// ─────────────── FETCH TENANT (:3003) ───────────────
 async function apiTenant(endpoint, params = {}) {
   const qs = new URLSearchParams({ endpoint: "/tenant" + endpoint, ...params }).toString();
-  const url = `/api/proxy?${qs}`;
-  console.log("[TENANT]", url);
-  const r = await fetch(url);
+  const r = await fetch(`${API}?${qs}`);
   if (!r.ok) {
     const txt = await r.text();
     throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
   }
-  return await r.json();
+  return r.json();
 }
 
-// ═══════════════════════════════════════════════════════════
-//   OWNER DASHBOARD
-// ═══════════════════════════════════════════════════════════
-function renderOwner() {
-  const savedToken = localStorage.getItem(LS_KEY) || "";
-  if (!savedToken) {
-    renderOwnerLogin();
-  } else {
-    loadOwnerData(savedToken);
+async function apiTenantPost(endpoint, body) {
+  const qs = new URLSearchParams({ endpoint: "/tenant" + endpoint }).toString();
+  const r = await fetch(`${API}?${qs}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`HTTP ${r.status}: ${txt.slice(0, 120)}`);
   }
+  return r.json();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   HELPERS
+// ═══════════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+function fmtMB(mb) {
+  const n = Number(mb || 0);
+  if (n >= 1024) return (n / 1024).toFixed(2) + " GB";
+  return n + " MB";
+}
+function fmtGB(mb) {
+  return (Number(mb || 0) / 1024).toFixed(2);
+}
+function fmtDate(d) {
+  if (!d) return "—";
+  try { return new Date(d).toLocaleString("pt-PT"); } catch { return d; }
+}
+function statusBadge(status) {
+  const map = {
+    finalizado: ["ok", "Finalizado"],
+    pendente: ["warn", "Pendente"],
+    processando: ["info", "Processando"],
+    falha: ["err", "Falha"],
+  };
+  const [cls, txt] = map[status] || ["neutral", status];
+  return `<span class="badge ${cls}">${txt}</span>`;
+}
+function urlShort(url) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    const p = u.pathname.length > 32 ? u.pathname.slice(0, 32) + "…" : u.pathname;
+    return u.host + p;
+  } catch { return String(url).slice(0, 45); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   OWNER — LOGIN
+// ═══════════════════════════════════════════════════════════════
+function renderOwner() {
+  const saved = localStorage.getItem(LS_KEY);
+  if (!saved) renderOwnerLogin();
+  else loadOwnerData(saved);
 }
 
 function renderOwnerLogin() {
   app.innerHTML = `
     <div class="wrap">
       <div class="login">
-        <h1>📊 <span style="color:#60a5fa">Owner</span> Dashboard</h1>
-        <input type="password" id="tok" placeholder="Token de acesso" autofocus>
-        <button class="btn" id="btn-login">Entrar</button>
-        <div id="err" style="color:#fca5a5;margin-top:12px;font-size:13px"></div>
+        <h1>📊 <span>Owner Dashboard</span></h1>
+        <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px">Insere o teu token de acesso</p>
+        <input type="password" id="tok" placeholder="Token" autofocus style="margin-bottom:12px">
+        <button class="btn" id="btn-login" style="width:100%">Entrar</button>
       </div>
     </div>`;
   document.getElementById("btn-login").onclick = () => {
@@ -136,26 +332,23 @@ async function loadOwnerData(token) {
       localStorage.removeItem(LS_KEY);
       return renderOwnerLogin();
     }
-    app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}<br><br><button class="btn" onclick="localStorage.clear();location.reload()">Voltar</button></div></div>`;
+    app.innerHTML = `<div class="wrap"><div class="empty">❌ ${esc(e.message)}<br><br><button class="btn secondary" onclick="localStorage.clear();location.reload()">Voltar</button></div></div>`;
   }
 }
 
 function renderOwnerView(d, token) {
-  const totalMB = (d.vendasHoje.mb / 1024).toFixed(2);
-  const tenantsRows = (d.tenants || []).map((t) => {
+  const rows = (d.tenants || []).map((t) => {
     const dias = t.diasRestantes;
     let badgeCls = "ok", badgeTxt = `${dias}d`;
     if (!t.ativo) { badgeCls = "err"; badgeTxt = "inativo"; }
-    else if (dias <= 3) { badgeCls = "err"; }
-    else if (dias <= 7) { badgeCls = "warn"; }
-    const mb = (t.vendasHoje.mb / 1024).toFixed(2);
-    return `<tr class="tenant-row" onclick="verTenant('${encodeURIComponent(t.lid)}', '${token}')">
-      <td><strong>${t.nome || "—"}</strong></td>
+    else if (dias <= 3) { badgeCls = "err"; badgeTxt = `${dias}d`; }
+    else if (dias <= 7) { badgeCls = "warn"; badgeTxt = `${dias}d`; }
+    return `<tr class="tenant-row" onclick="verTenant('${encodeURIComponent(t.lid)}','${esc(token)}')">
+      <td><strong>${esc(t.nome || "—")}</strong></td>
       <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
-      <td>${dias} dias</td>
       <td>${t.grupos}</td>
       <td>${t.pedidos.pendentes}</td>
-      <td><strong>${mb} GB</strong></td>
+      <td>${fmtGB(t.vendasHoje.mb)} GB</td>
       <td><strong>${t.vendasHoje.mt} MT</strong></td>
     </tr>`;
   }).join("");
@@ -164,31 +357,35 @@ function renderOwnerView(d, token) {
     <div class="wrap">
       <div class="topbar">
         <div class="logo">📊 Owner <span>Dashboard</span></div>
-        <div>
-          <button class="btn secondary" onclick="loadOwnerData('${token}')">🔄 Atualizar</button>
+        <div class="topbar-actions">
+          <button class="btn secondary" onclick="loadOwnerData('${esc(token)}')">🔄 Atualizar</button>
           <button class="btn secondary" onclick="localStorage.clear();location.reload()">Sair</button>
         </div>
       </div>
 
-      <div class="updated">Última atualização: ${new Date(d.timestamp || Date.now()).toLocaleTimeString("pt-PT")}</div>
+      <div class="updated">Última atualização: ${new Date().toLocaleTimeString("pt-PT")}</div>
 
       <div class="grid cards">
         <div class="card hl-blue">
+          <div class="icon">👥</div>
           <div class="label">Tenants</div>
-          <div class="value">${d.ativos}<span style="font-size:16px;color:#94a3b8"> / ${d.total}</span></div>
+          <div class="value">${d.ativos}<small> / ${d.total}</small></div>
           <div class="sub">ativos / total</div>
         </div>
         <div class="card hl-amber">
+          <div class="icon">⏰</div>
           <div class="label">A expirar (7d)</div>
           <div class="value">${d.expirando}</div>
           <div class="sub">tenants</div>
         </div>
         <div class="card hl-green">
+          <div class="icon">💰</div>
           <div class="label">Vendas hoje</div>
-          <div class="value">${totalMB}<span style="font-size:14px;color:#94a3b8"> GB</span></div>
-          <div class="sub">${d.vendasHoje.mt} MT</div>
+          <div class="value">${fmtGB(d.vendasHoje.mb)}<small> GB</small></div>
+          <div class="sub">${d.vendasHoje.mt} MT faturados</div>
         </div>
         <div class="card">
+          <div class="icon">📦</div>
           <div class="label">Pedidos pendentes</div>
           <div class="value">${d.pedidosPendentes}</div>
           <div class="sub">a aguardar</div>
@@ -197,107 +394,377 @@ function renderOwnerView(d, token) {
 
       <div class="section">
         <h2>🏆 Ranking de tenants (hoje)</h2>
-        <table>
-          <thead><tr><th>Tenant</th><th>Estado</th><th>Expira</th><th>Grupos</th><th>Pendentes</th><th>Vendas MB</th><th>Vendas MT</th></tr></thead>
-          <tbody>${tenantsRows || `<tr><td colspan="7" class="empty">Nenhum tenant</td></tr>`}</tbody>
-        </table>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Tenant</th><th>Estado</th><th>Grupos</th><th>Pendentes</th><th>Vendas</th><th>MT</th>
+            </tr></thead>
+            <tbody>${rows || `<tr><td colspan="6" class="empty">Nenhum tenant</td></tr>`}</tbody>
+          </table>
+        </div>
       </div>
     </div>`;
 }
 
-window.verTenant = async function(lidEncoded, token) {
+window.verTenant = async function (lidEncoded, token) {
   const lid = decodeURIComponent(lidEncoded);
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
     const d = await apiOwner(`/dash/tenant/${encodeURIComponent(lid)}`, { token });
     renderTenantDetail(d, token, true);
   } catch (e) {
-    app.innerHTML = `<div class="wrap"><div class="empty">❌ ${e.message}</div></div>`;
+    app.innerHTML = `<div class="wrap"><div class="empty">❌ ${esc(e.message)}</div></div>`;
   }
 };
 
-// ═══════════════════════════════════════════════════════════
-//   TENANT DASHBOARD
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//   TENANT — VIEW
+// ═══════════════════════════════════════════════════════════════
+let _tenantData = null;
+let _tenantToken = null;
+let _tenantTab = "visao";
+let _configData = null;
+
 async function renderTenant(token) {
+  _tenantToken = token;
   app.innerHTML = `<div class="wrap"><div class="loading"><span class="spinner"></span>A carregar…</div></div>`;
   try {
-    const d = await apiTenant("/dash/me", { token });
-    renderTenantDetail(d, token, false);
+    _tenantData = await apiTenant("/dash/me", { token });
+    renderTenantView();
   } catch (e) {
     if (e.message.includes("401")) {
-      app.innerHTML = `<div class="wrap"><div class="empty">🔒 Link inválido ou expirado.<br>Pede ao bot um novo com <code>.gerardashboard</code></div></div>`;
+      app.innerHTML = `<div class="wrap"><div class="empty">🔒 Link inválido ou expirado.<br><br>Pede ao bot um novo com <code>.gerardashboard</code></div></div>`;
       return;
     }
-    app.innerHTML = `<div class="wrap"><div class="empty">❌ Erro: ${e.message}</div></div>`;
+    app.innerHTML = `<div class="wrap"><div class="empty">❌ ${esc(e.message)}</div></div>`;
   }
 }
 
-function renderTenantDetail(d, token, isOwner) {
-  const totalMB = (d.vendasHoje.mb / 1024).toFixed(2);
-  const diasRestantes = d.diasRestantes;
+function renderTenantView() {
+  const d = _tenantData;
+  const token = _tenantToken;
+  const dias = d.diasRestantes || 0;
+
   let badgeCls = "ok";
   if (!d.ativo) badgeCls = "err";
-  else if (diasRestantes <= 3) badgeCls = "err";
-  else if (diasRestantes <= 7) badgeCls = "warn";
+  else if (dias <= 3) badgeCls = "err";
+  else if (dias <= 7) badgeCls = "warn";
 
-  const ranking = (d.topCompradores || []).map((c, i) => {
-    const mb = (c.totalMB / 1024).toFixed(2);
-    return `<tr><td class="rank-num">#${i + 1}</td><td>${c.numero}</td><td>${c.compras} compras</td><td><strong>${mb} GB</strong></td></tr>`;
-  }).join("");
-
-  const back = isOwner ? `<button class="btn secondary" onclick="location.reload()">← Voltar</button>` : "";
-  const refresh = isOwner
-    ? `onclick="verTenant('${encodeURIComponent(d.lid)}', '${token}')"`
-    : `onclick="renderTenant('${token}')"`;
+  const tabs = [
+    { id: "visao",      label: "📊 Visão Geral" },
+    { id: "config",     label: "⚙️ Configurações" },
+    { id: "logs",       label: "📋 Últimos Pedidos" },
+    { id: "compradores",label: "🏆 Top Compradores" },
+  ];
 
   app.innerHTML = `
     <div class="wrap">
       <div class="topbar">
-        <div class="logo">📊 <span>${d.nome || "Meu Dashboard"}</span></div>
-        <div>
-          <button class="btn secondary" ${refresh}>🔄 Atualizar</button>
-          ${back}
+        <div class="logo">📊 <span>${esc(d.nome || "Dashboard")}</span></div>
+        <div class="topbar-actions">
+          <button class="btn secondary" onclick="renderTenant('${esc(token)}')">🔄 Atualizar</button>
         </div>
       </div>
 
       <div class="grid cards">
         <div class="card hl-${badgeCls === "ok" ? "green" : badgeCls === "warn" ? "amber" : "red"}">
+          <div class="icon">${d.ativo ? "🟢" : "🔴"}</div>
           <div class="label">Estado</div>
           <div class="value">${d.ativo ? "Ativo" : "Inativo"}</div>
-          <div class="sub">${diasRestantes} dias restantes</div>
+          <div class="sub">${dias} dias restantes</div>
         </div>
-        <div class="card">
+        <div class="card hl-green">
+          <div class="icon">💰</div>
           <div class="label">Vendas hoje</div>
-          <div class="value">${totalMB}<span style="font-size:14px;color:#94a3b8"> GB</span></div>
+          <div class="value">${fmtGB(d.vendasHoje.mb)}<small> GB</small></div>
           <div class="sub">${d.vendasHoje.mt} MT</div>
         </div>
         <div class="card">
+          <div class="icon">📦</div>
           <div class="label">Pedidos</div>
           <div class="value">${d.pedidos.total}</div>
           <div class="sub">${d.pedidos.pendentes} pendentes · ${d.pedidos.finalizadosHoje} hoje</div>
         </div>
         <div class="card">
+          <div class="icon">👥</div>
           <div class="label">Clientes</div>
           <div class="value">${d.totalCompradores}</div>
           <div class="sub">${d.grupos} grupos ativos</div>
         </div>
       </div>
 
-      <div class="section">
-        <h2>🏆 Top 5 Compradores</h2>
-        ${ranking ? `<table><thead><tr><th></th><th>Número</th><th>Compras</th><th>Total</th></tr></thead><tbody>${ranking}</tbody></table>` : `<div class="empty">Sem compradores</div>`}
+      <div class="tabs">
+        ${tabs.map((t) => `<button class="tab ${t.id === _tenantTab ? "active" : ""}" data-tab="${t.id}">${t.label}</button>`).join("")}
       </div>
 
-      <div class="section">
-        <h2>📅 Aluguer</h2>
+      <div id="tab-content"></div>
+    </div>`;
+
+  document.querySelectorAll(".tab").forEach((el) => {
+    el.onclick = () => {
+      _tenantTab = el.dataset.tab;
+      renderTenantView();
+    };
+  });
+
+  const box = document.getElementById("tab-content");
+  if (_tenantTab === "visao")       renderTabVisao(box, d);
+  if (_tenantTab === "config")      renderTabConfig(box, token);
+  if (_tenantTab === "logs")        renderTabLogs(box, token);
+  if (_tenantTab === "compradores") renderTabCompradores(box, d);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   TAB — VISÃO GERAL
+// ═══════════════════════════════════════════════════════════════
+function renderTabVisao(box, d) {
+  box.innerHTML = `
+    <div class="section">
+      <h2>📅 Aluguer</h2>
+      <div class="kv"><span class="k">Expira em</span><span class="v">${d.expiraEm ? new Date(d.expiraEm).toLocaleDateString("pt-PT") : "—"}</span></div>
+      <div class="kv"><span class="k">Dias restantes</span><span class="v">${d.diasRestantes} dias</span></div>
+      <div class="kv"><span class="k">LID</span><span class="v">${esc(d.lid)}</span></div>
+    </div>
+
+    <div class="section">
+      <h2>📊 Resumo</h2>
+      <div class="kv"><span class="k">Pedidos hoje</span><span class="v">${d.pedidos.hoje}</span></div>
+      <div class="kv"><span class="k">Finalizados hoje</span><span class="v">${d.pedidos.finalizadosHoje}</span></div>
+      <div class="kv"><span class="k">Pendentes</span><span class="v">${d.pedidos.pendentes}</span></div>
+      <div class="kv"><span class="k">Vendas hoje (MB)</span><span class="v">${d.vendasHoje.mb} MB</span></div>
+      <div class="kv"><span class="k">Vendas hoje (MT)</span><span class="v">${d.vendasHoje.mt} MT</span></div>
+      <div class="kv"><span class="k">Total compradores</span><span class="v">${d.totalCompradores}</span></div>
+      <div class="kv"><span class="k">Grupos ativos</span><span class="v">${d.grupos}</span></div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   TAB — CONFIGURAÇÕES (URLs)
+// ═══════════════════════════════════════════════════════════════
+async function renderTabConfig(box, token) {
+  box.innerHTML = `<div class="loading"><span class="spinner"></span>A carregar configurações…</div>`;
+  try {
+    const d = await apiTenant("/dash/me/config", { token });
+    _configData = d.campos;
+    drawConfigForm(box);
+  } catch (e) {
+    box.innerHTML = `<div class="section"><div class="empty">❌ ${esc(e.message)}</div></div>`;
+  }
+}
+
+function drawConfigForm(box) {
+  const c = _configData;
+  const grupos = {
+    vendas:       { icon: "📦", titulo: "Vendas" },
+    fornecimento: { icon: "🚚", titulo: "Fornecimento" },
+    credito:      { icon: "💳", titulo: "Crédito" },
+    especial:     { icon: "🎁", titulo: "Especial" },
+    sms:          { icon: "✉️", titulo: "SMS" },
+    outros:       { icon: "🌐", titulo: "Outros" },
+  };
+
+  let html = `<div class="section">
+    <div class="section-head">
+      <h2>⚙️ URLs de MacroDroid</h2>
+      <button class="btn success" id="btn-save">💾 Guardar alterações</button>
+    </div>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:20px">
+      Edita os URLs usados pelos teus gatilhos. Cada tipo tem <strong>2 URLs</strong>:
+      <code>Gatilho</code> (executa a transferência) e <code>Comando</code> (acorda o Android).
+    </p>`;
+
+  // Agrupa por grupo
+  const porGrupo = {};
+  for (const [k, info] of Object.entries(c)) {
+    const g = info.grupo || "outros";
+    if (!porGrupo[g]) porGrupo[g] = [];
+    porGrupo[g].push([k, info]);
+  }
+
+  for (const [g, campos] of Object.entries(porGrupo)) {
+    const meta = grupos[g] || { icon: "📄", titulo: g };
+    const configurados = campos.filter(([, i]) => i.valor).length;
+    const total = campos.length;
+
+    html += `<div class="url-group">
+      <div class="url-group-head">
+        <span class="url-group-icon">${meta.icon}</span>
+        <span class="url-group-title">${meta.titulo}</span>
+        <span class="url-group-status">${configurados}/${total} configurados</span>
+      </div>`;
+
+    for (const [k, info] of campos) {
+      const v = info.valor || "";
+      const tipo = info.tipo === "secret" ? "password" : "url";
+      const mask = info.tipo === "secret" && v ? "••••••••" + v.slice(-4) : v;
+
+      html += `<div class="field">
+        <label>${info.label}</label>
+        <div class="input-group">
+          <input type="${tipo}"
+                 data-campo="${k}"
+                 value="${esc(mask)}"
+                 placeholder="https://trigger.macrodroid.com/..."
+                 ${info.tipo === "secret" && v ? 'data-has-value="1"' : ""}>
+          ${v ? `<button class="btn secondary small" data-test="${esc(v)}" type="button" title="Abrir URL">🔗</button>` : ""}
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  box.innerHTML = html;
+
+  // Testar
+  box.querySelectorAll("[data-test]").forEach((btn) => {
+    btn.onclick = () => {
+      const u = btn.dataset.test;
+      if (u) window.open(u, "_blank", "noopener");
+    };
+  });
+
+  // Validação visual
+  box.querySelectorAll("input[data-campo]").forEach((input) => {
+    input.addEventListener("blur", () => {
+      const v = input.value.trim();
+      if (!v) { input.classList.remove("valid", "invalid"); return; }
+      if (input.type === "password") { input.classList.remove("valid", "invalid"); return; }
+      try { new URL(v); input.classList.add("valid"); input.classList.remove("invalid"); }
+      catch { input.classList.add("invalid"); input.classList.remove("valid"); }
+    });
+  });
+
+  // Guardar
+  document.getElementById("btn-save").onclick = async () => {
+    const btn = document.getElementById("btn-save");
+    btn.disabled = true;
+    btn.textContent = "⏳ A guardar…";
+
+    const alteracoes = {};
+    box.querySelectorAll("input[data-campo]").forEach((input) => {
+      const campo = input.dataset.campo;
+      const valorOriginal = c[campo]?.valor || "";
+      const valorAtual = input.value.trim();
+      const temMascara = input.dataset.hasValue === "1";
+      const tipo = input.type;
+
+      // Se é secret com máscara e não foi tocado → ignora
+      if (tipo === "password" && temMascara && valorAtual.startsWith("••••")) return;
+
+      if (valorAtual !== valorOriginal) {
+        alteracoes[campo] = valorAtual || null;
+      }
+    });
+
+    if (Object.keys(alteracoes).length === 0) {
+      toast("Nada a alterar", "success");
+      btn.disabled = false;
+      btn.textContent = "💾 Guardar alterações";
+      return;
+    }
+
+    try {
+      const r = await apiTenantPost("/dash/me/config", {
+        token: _tenantToken,
+        campos: alteracoes,
+      });
+
+      if (r.erros && r.erros.length > 0) {
+        toast(`⚠️ ${r.erros.length} campo(s) com erro`, "error");
+      }
+      if (r.alterados && r.alterados.length > 0) {
+        toast(`✅ ${r.alterados.length} campo(s) guardado(s)`, "success");
+        // Recarrega dados frescos
+        const fresh = await apiTenant("/dash/me/config", { token: _tenantToken });
+        _configData = fresh.campos;
+        drawConfigForm(box);
+        return;
+      }
+      toast(r.msg || "Sem alterações", "success");
+    } catch (e) {
+      toast("❌ " + e.message, "error");
+    }
+    btn.disabled = false;
+    btn.textContent = "💾 Guardar alterações";
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   TAB — LOGS / ÚLTIMOS PEDIDOS
+// ═══════════════════════════════════════════════════════════════
+async function renderTabLogs(box, token) {
+  box.innerHTML = `<div class="loading"><span class="spinner"></span>A carregar pedidos…</div>`;
+  try {
+    const r = await apiTenant("/dash/me/logs", { token });
+    const pedidos = r.pedidos || [];
+
+    if (pedidos.length === 0) {
+      box.innerHTML = `<div class="section"><div class="empty">📭 Nenhum pedido ainda</div></div>`;
+      return;
+    }
+
+    const rows = pedidos.map((p) => `
+      <tr>
+        <td><code>${esc((p.pedidoId || "").slice(-10))}</code></td>
+        <td>${esc(p.numero)}</td>
+        <td>${fmtMB(p.quantidadeMB)}</td>
+        <td><strong>${p.valor} MT</strong></td>
+        <td>${statusBadge(p.status)}</td>
+        <td style="font-size:12px;color:var(--text-mute)">${fmtDate(p.dataCriacao)}</td>
+      </tr>`).join("");
+
+    box.innerHTML = `<div class="section">
+      <h2>📋 Últimos 20 pedidos</h2>
+      <div style="overflow-x:auto">
         <table>
-          <tr><td style="width:200px;color:#94a3b8">Expira em</td><td>${d.expiraEm ? new Date(d.expiraEm).toLocaleDateString("pt-PT") : "—"}</td></tr>
-          <tr><td style="color:#94a3b8">Dias restantes</td><td><span class="badge ${badgeCls}">${diasRestantes} dias</span></td></tr>
-          <tr><td style="color:#94a3b8">LID</td><td><code style="color:#93c5fd">${d.lid}</code></td></tr>
+          <thead><tr>
+            <th>ID</th><th>Número</th><th>MB</th><th>Valor</th><th>Estado</th><th>Data</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
         </table>
       </div>
     </div>`;
+  } catch (e) {
+    box.innerHTML = `<div class="section"><div class="empty">❌ ${esc(e.message)}</div></div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   TAB — COMPRADORES
+// ═══════════════════════════════════════════════════════════════
+function renderTabCompradores(box, d) {
+  const top = d.topCompradores || [];
+  if (top.length === 0) {
+    box.innerHTML = `<div class="section"><div class="empty">📭 Sem compradores registados</div></div>`;
+    return;
+  }
+  const rows = top.map((c, i) => `
+    <tr>
+      <td class="rank-num">#${i + 1}</td>
+      <td>${esc(c.numero)}</td>
+      <td>${c.compras} compras</td>
+      <td><strong>${fmtGB(c.totalMB)} GB</strong></td>
+    </tr>`).join("");
+
+  box.innerHTML = `<div class="section">
+    <h2>🏆 Top 5 Compradores</h2>
+    <table>
+      <thead><tr><th></th><th>Número</th><th>Compras</th><th>Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//   PLACEHOLDER — renderTenantDetail (compatibilidade com verTenant)
+// ═══════════════════════════════════════════════════════════════
+function renderTenantDetail(d, token, isOwner) {
+  _tenantData = d;
+  _tenantToken = token;
+  _tenantTab = "visao";
+  renderTenantView();
 }
 </script>
 </body>
